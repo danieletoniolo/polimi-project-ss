@@ -8,6 +8,13 @@ The repository has two main directories:
 - [`laboratories/`](laboratories/): Contains the materials for the laboratory sessions, including the project descriptions, code templates, and solutions.
 - [`homework/`](homework/): Contains the materials for the homework assignments, including the descriptions, code templates, and solutions.
 
+## Projects and Homework Overview
+
+Avilable projects and homework assignments include:
+
+- [`LAB01-1a/`](laboratories/laboratory-01/LAB01-1a/): Push Button (Polling)
+- [`LAB01-1b/`](laboratories/laboratory-01/LAB01-1b/): Push Button (Interrupt)
+
 ## Usage
 The projects had been designed to be implemented using the STM32CubeIDE, which is an integrated development environment for STM32 microcontrollers. Each project includes a description of the objectives, the steps to follow, and the code templates to use.
 
