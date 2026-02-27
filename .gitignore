@@ -1,0 +1,9 @@
+# MacOS
+*.DS_Store
+
+# STM32CubeIDE
+*.settings/
+*.metadata/
+*Release/
+*Debug/
+*.launch
