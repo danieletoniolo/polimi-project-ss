@@ -10,10 +10,14 @@ The repository has two main directories:
 
 ## Projects and Homework Overview
 
-Avilable projects and homework assignments include:
+Available projects and homework assignments include:
 
 - [`LAB01-1a/`](laboratories/laboratory-01/LAB01-1a/): Push Button (Polling)
 - [`LAB01-1b/`](laboratories/laboratory-01/LAB01-1b/): Push Button (Interrupt)
+- [`LAB02-1c/`](laboratories/laboratory-02/LAB02-1c/): LED Blinking (PWM)
+- [`LAB02-2a/`](laboratories/laboratory-02/LAB02-2a/): Single Tone (PWM)
+- [`LAB02-2b/`](laboratories/laboratory-02/LAB02-2b/): Song Playback (PWM)
+- [`LAB02-2c/`](laboratories/laboratory-02/LAB02-2c/): Microphone Triggered Song Playback (PWM)
 
 ## Usage
 The projects had been designed to be implemented using the STM32CubeIDE, which is an integrated development environment for STM32 microcontrollers. Each project includes a description of the objectives, the steps to follow, and the code templates to use.
