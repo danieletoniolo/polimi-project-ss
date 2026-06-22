@@ -23,9 +23,9 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
 2. In the IOC file, configure the speaker pin (PA9) as an alternate function for TIM1 channel 2 (TIM1_CH2) to generate the PWM signal and the microphone pin (PA8) as an external interrupt (GPIO_EXTI8) to trigger the start of the song. The microphone pin should be configured as an external interrupt with a rising edge trigger and also a pull-down resistor to avoid false triggering.
 3. In the "System Core" tab, select "NVIC Settings" and enable the EXTI line[9:5] interrupts.
-3. Also, in the IOC file, in the "TIM1" tab, select "PWM Generation CH2" for Channel 2 and then in the "Parameter settings" tab, set the Prescaler to 99, the Counter Period and the pulse can be set to 0 since they will be updated at runtime based on the desired frequency.
-4. Generate the code and open the main.c file.
-5. Define a struct to hold the note frequency and duration:
+4. Also, in the IOC file, in the "TIM1" tab, select "PWM Generation CH2" for Channel 2 and then in the "Parameter settings" tab, set the Prescaler to 99, the Counter Period and the pulse can be set to 0 since they will be updated at runtime based on the desired frequency.
+5. Generate the code and open the main.c file.
+6. Define a struct to hold the note frequency and duration:
 
     ```c
     typedef struct {
@@ -33,7 +33,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
       uint16_t duration;  // Note duration in milliseconds
     } Note;
     ```
-6. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note and calculate the length of the song:
+7. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note and calculate the length of the song:
 
     ```c
     Note londonBridge[] = {
@@ -87,7 +87,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
     volatile uint8_t playSongFlag = 0;
     ```
 
-7. Define a function to play a note using PWM by setting the TIM1 channel 2 Pulse and Counter Period based on the note frequency and duration.
+9. Define a function to play a note using PWM by setting the TIM1 channel 2 Pulse and Counter Period based on the note frequency and duration.
 
     ```c
     void playNote(uint16_t freq) {
@@ -110,7 +110,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
         }
     }
     ```
-8. In the main function, inside the infinite loop, check if the `playSongFlag` is set. If it is, play the song by iterating through the `londonBridge` array and calling the `playNote` function for each note. After playing the song, reset the `playSongFlag`.
+10. In the main function, inside the infinite loop, check if the `playSongFlag` is set. If it is, play the song by iterating through the `londonBridge` array and calling the `playNote` function for each note. After playing the song, reset the `playSongFlag`.
 
     ```c
     while (1)
@@ -137,7 +137,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
         }
     }
     ```
-9. At the very end of the main.c file, implement the EXTI interrupt callback function to set the `playSongFlag` when the microphone detects a loud noise.
+11. At the very end of the main.c file, implement the EXTI interrupt callback function to set the `playSongFlag` when the microphone detects a loud noise.
 
     ```c
     // This function is automatically called when an External Interrupt (EXTI) triggers

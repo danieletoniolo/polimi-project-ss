@@ -6,7 +6,7 @@ This repository contains the materials for the Sensor Systems course, held at th
 
 The repository has two main directories:
 - [`laboratories/`](laboratories/): Contains the materials for the laboratory sessions, including the project descriptions, code templates, and solutions.
-- [`homework/`](homework/): Contains the materials for the homework assignments, including the descriptions, code templates, and solutions.
+- [`homeworks/`](homeworks/): Contains the materials for the homework assignments, including the descriptions, code templates, and solutions.
 
 ## Projects and Homework Overview
 
@@ -14,6 +14,7 @@ Available projects and homework assignments include:
 
 - [`LAB01-1a/`](laboratories/laboratory-01/LAB01-1a/): Push Button (Polling)
 - [`LAB01-1b/`](laboratories/laboratory-01/LAB01-1b/): Push Button (Interrupt)
+- [`HW02-1a/`](homeworks/homework-02/HW02-1a/): Microphone (Interrupt)
 - [`LAB02-1c/`](laboratories/laboratory-02/LAB02-1c/): LED Blinking (PWM)
 - [`LAB02-2a/`](laboratories/laboratory-02/LAB02-2a/): Single Tone (PWM)
 - [`LAB02-2b/`](laboratories/laboratory-02/LAB02-2b/): Song Playback (PWM)
