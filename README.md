@@ -30,6 +30,8 @@ Available projects and homework assignments include:
 - [`LAB04-3a/`](laboratories/laboratory-04/LAB04-3a/): ADC scan using DMA
 - [`LAB04-3b/`](laboratories/laboratory-04/LAB04-3b/): ADC scan using DMA with LUX calculation
 - [`HW05-1a/`](homeworks/homework-05/HW05-1a/): UART to LCD
+- [`LAB05-1a/`](laboratories/laboratory-05/LAB05-1a/): Temperature Sensor (MSByte Only)
+- [`LAB05-1b/`](laboratories/laboratory-05/LAB05-1b/): Temperature Sensor (MSByte and LSByte)
 
 ## Usage
 The projects had been designed to be implemented using the STM32CubeIDE, which is an integrated development environment for STM32 microcontrollers. Each project includes a description of the objectives, the steps to follow, and the code templates to use.
