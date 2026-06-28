@@ -32,6 +32,9 @@ Available projects and homework assignments include:
 - [`HW05-1a/`](homeworks/homework-05/HW05-1a/): UART to LCD
 - [`LAB05-1a/`](laboratories/laboratory-05/LAB05-1a/): Temperature Sensor (MSByte Only)
 - [`LAB05-1b/`](laboratories/laboratory-05/LAB05-1b/): Temperature Sensor (MSByte and LSByte)
+- [`LAB06-1a/`](laboratories/laboratory-06/LAB06-1a/): Accelerometer (Basic Polling)
+- [`LAB06-1b/`](laboratories/laboratory-06/LAB06-1b/): Accelerometer (TIM interrupt and UART DMA)
+- [`LAB06-1c/`](laboratories/laboratory-06/LAB06-1c/): Accelerometer (TIM interrupt, UART DMA and I2C DMA)
 
 ## Usage
 The projects had been designed to be implemented using the STM32CubeIDE, which is an integrated development environment for STM32 microcontrollers. Each project includes a description of the objectives, the steps to follow, and the code templates to use.
