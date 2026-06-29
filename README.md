@@ -35,6 +35,7 @@ Available projects and homework assignments include:
 - [`LAB06-1a/`](laboratories/laboratory-06/LAB06-1a/): Accelerometer (Basic Polling)
 - [`LAB06-1b/`](laboratories/laboratory-06/LAB06-1b/): Accelerometer (TIM interrupt and UART DMA)
 - [`LAB06-1c/`](laboratories/laboratory-06/LAB06-1c/): Accelerometer (TIM interrupt, UART DMA and I2C DMA)
+- [`LAB07-1a/`](laboratories/laboratory-07/LAB07-1a/): LED Matrix
 
 ## Usage
 The projects had been designed to be implemented using the STM32CubeIDE, which is an integrated development environment for STM32 microcontrollers. Each project includes a description of the objectives, the steps to follow, and the code templates to use.
