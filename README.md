@@ -4,9 +4,11 @@ This repository contains the materials for the Sensor Systems course, held at th
 
 ## Repository Structure
 
-The repository has two main directories:
-- [`laboratories/`](laboratories/): Contains the materials for the laboratory sessions, including the project descriptions, code templates, and solutions.
+The repository has three main directories:
+
+- [`docs/`](docs/): Contains the software and hardware platforms documentation, including the datasheets, user manuals, and reference manuals for the STM32 microcontrollers and the various sensors used in the course.
 - [`homeworks/`](homeworks/): Contains the materials for the homework assignments, including the descriptions, code templates, and solutions.
+- [`laboratories/`](laboratories/): Contains the materials for the laboratory sessions, including the project descriptions, code templates, and solutions.
 
 ## Projects and Homework Overview
 
