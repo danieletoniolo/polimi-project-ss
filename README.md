@@ -38,6 +38,10 @@ Available projects and homework assignments include:
 - [`LAB07-1a/`](laboratories/laboratory-07/LAB07-1a/): LED Matrix
 - [`LAB08-1a/`](laboratories/laboratory-08/LAB08-1a/): Keyboard
 - [`LAB09-1a/`](laboratories/laboratory-09/LAB09-1a/): Encoder Readout
+- [`LAB10-1a/`](laboratories/laboratory-10/LAB10-1a/): IR communication (TX only)
+- [`LAB10-2a/`](laboratories/laboratory-10/LAB10-2a/): IR communication (RX only)
+- [`LAB10-3a/`](laboratories/laboratory-10/LAB10-3a/): IR communication (TX and RX)
+
 
 ## Usage
 The projects had been designed to be implemented using the STM32CubeIDE, which is an integrated development environment for STM32 microcontrollers. Each project includes a description of the objectives, the steps to follow, and the code templates to use.
