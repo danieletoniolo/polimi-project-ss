@@ -1,20 +1,20 @@
-# Project 1b: Accelerometer (TIM interrupt, UART DMA and I2C DMA)
+# LAB06-1c: Accelerometer (TIM Interrupt, UART DMA and I2C DMA)
 
 ## Description
-Objective of this project is to read the acceleration measured by accelerometer and send it to a remote terminal via UART every second.
+The objective of this project is to read the acceleration measured by the accelerometer of the expansion board and send it to a remote terminal via UART every second. Compared to the previous version, the I2C read is performed in DMA mode as well: the timer callback only starts the transfer and the data are processed inside the I2C receive complete callback, so no blocking call is left in the project. The code automatically detects which of the two accelerometers (LIS2DE or LIS2DW) is mounted on the board.
 
 ## Steps
-1. Create a new project in STM32CubeIDE for your Nucleo board.
-2. In the IOC file, configure the pin for USART communication. The PA2 pin is used for USART2 TX and the PA3 pin is used for USART2 RX.
-3. Configure the pin use for I2C communication (PB9 for I2C1_SDA and PB8 for I2C1_SCL).
-4. In the "Connectivity" tab of the IOC file, select USART2 and enable it in asynchronous mode. Set the baud rate to 115200, data bits to 8 including parity, and stop bits to 1.
+1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
+2. In the IOC file, configure the pins for USART communication. The PA2 pin is used for USART2 TX and the PA3 pin is used for USART2 RX.
+3. In the IOC file, configure the pins used for I2C communication (PB9 for I2C1_SDA and PB8 for I2C1_SCL).
+4. In the "Connectivity" tab of the IOC file, select USART2 and set the Mode to "Asynchronous". Configure the Baud Rate to 115200 Bits/s, Word Length to 8 Bits, Parity to None, and Stop Bits to 1.
 5. Still in the USART2 configuration, enable the "DMA Settings" and configure the DMA for transmission (TX) as follows:
     - DMA Request: USART2_TX
     - Direction: Memory to Peripheral
     - Mode: Normal
     - Priority: Low
 6. In the "NVIC Settings" tab, enable the USART2 global interrupt.
-7. In the "Connectivity" tab of the IOC file, select I2C1 and enable it in I2C mode in normal mode (100 kHz).
+7. In the "Connectivity" tab of the IOC file, select I2C1 and enable it in I2C mode with a standard speed of 100 kHz.
 8. Still in the I2C1 configuration, enable the "DMA Settings" and configure the DMA for reception (RX) as follows:
     - DMA Request: I2C1_RX
     - Direction: Peripheral to Memory
@@ -23,7 +23,8 @@ Objective of this project is to read the acceleration measured by accelerometer 
 9. In the "NVIC Settings" tab, enable the I2C1 event interrupt.
 10. Configure a timer (TIM2) to generate an interrupt every second. Set the prescaler to 8399 and the period to 9999 to achieve a 1-second interval (assuming an 84 MHz clock) and enable the TIM2 global interrupt in the NVIC settings.
 11. Generate the code and open the main.c file.
-12. Define the variables for the I2C addresses, registers, and data storage:
+12. Define the variables for the I2C addresses, the sensor registers and the data storage:
+
     ```c
     // Sensor Identification Enum
     typedef enum {
@@ -60,7 +61,8 @@ Objective of this project is to read the acceleration measured by accelerometer 
     char tx_buffer[100];
     int length;
     ```
-13. In the main function we detect the type of accelerometer present on the board:
+13. In the main function, before the infinite loop, detect the type of accelerometer present on the board, configure it and start the timer in interrupt mode:
+
     ```c
     if (HAL_I2C_IsDeviceReady(&hi2c1, LIS2DE_ADDR, 2, 100) == HAL_OK) {
 
@@ -81,7 +83,7 @@ Objective of this project is to read the acceleration measured by accelerometer 
         // Select active sensor
         active_sensor = SENSOR_LIS2DW;
 
-        // Initialize LIS2DW (12.5 Hz, HP mode, BDU on, IF_INC on, +/- 2g)
+        // Initialize LIS2DW (12.5 Hz, High-Performance mode, BDU on, IF_INC on, +/- 2g)
         cfg_reg = 0x14; // CTRL1
         HAL_I2C_Mem_Write(&hi2c1, LIS2DW_ADDR, LIS2DW_CTRL1, I2C_MEMADD_SIZE_8BIT, &cfg_reg, 1, 100);
         cfg_reg = 0x0C; // CTRL2
@@ -101,7 +103,8 @@ Objective of this project is to read the acceleration measured by accelerometer 
     // Start the timer in interrupt mode
     HAL_TIM_Base_Start_IT(&htim2);
     ```
-14. Implement the Timer callback to trigger the non-blocking I2C read every 1 second:
+14. At the very end of the main.c file, implement the timer callback to trigger the non-blocking I2C read every second:
+
     ```c
     // This function is automatically called when a Timer Period elapses
     void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -111,15 +114,16 @@ Objective of this project is to read the acceleration measured by accelerometer 
             if (active_sensor == SENSOR_LIS2DE) {
                 // Start I2C DMA Read for LIS2DE
                 HAL_I2C_Mem_Read_DMA(&hi2c1, LIS2DE_ADDR, LIS2DE_OUT_X, I2C_MEMADD_SIZE_8BIT, raw_data, 6);
-            } 
-            else if (active_sensor == SENSOR_LIS2DW) {
+            } else if (active_sensor == SENSOR_LIS2DW) {
+
                 // Start I2C DMA Read for LIS2DW
                 HAL_I2C_Mem_Read_DMA(&hi2c1, LIS2DW_ADDR, LIS2DW_OUT_X_L, I2C_MEMADD_SIZE_8BIT, raw_data, 6);
             }
         }
     }
     ```
-15. Implement the I2C callback to process the data once the DMA transfer is complete:
+15. Just after the timer callback, implement the I2C receive complete callback to process the data once the DMA transfer is complete and send them via UART DMA:
+
     ```c
     // This function is automatically called when the I2C DMA read finishes
     void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
@@ -159,10 +163,12 @@ Objective of this project is to read the acceleration measured by accelerometer 
         }
     }
     ```
+
 **Note**:
 - *The baud rate could be set to any value supported by the hardware as long as it is within the supported range and the receiver is configured accordingly.*
 - *To format the string with floating-point values, we have to enable the Float formatting option in the project settings under C/C++ Build > Settings > MCU Settings. It is disabled by default to save resources.*
 - *The 8-bit data for the LIS2DE must be cast to a signed int8_t before multiplying by the sensitivity float. This ensures the C compiler preserves the two's complement sign properly when doing the math.*
 - *To read multiple registers in a single transaction from the LIS2DE, the Most Significant Bit (MSB) of the starting address must be set to '1'. This is why we read from 0x28 | 0x80. The LIS2DW handles auto-incrementing automatically via its CTRL2 register.*
 - *The LIS2DE is configured for 1 Hz Normal mode with a ±2g range. CTRL_REG1 (0x20) is set to 0x17 to enable all 3 axes, set Normal mode, and set ODR to 1 Hz. CTRL_REG4 (0x23) is set to 0x00 to select the ±2g scale and continuous update. The high-pass filter is bypassed by default.*
-- *The LIS2DW is configured for 1.6 Hz Low-Power Mode 1 with a ±2g range. CTRL1 (0x20) is set to 0x10 to select Low-Power mode 1 and an ODR of 1.6 Hz. CTRL2 (0x21) is set to 0x0C to enable Block Data Update (BDU) and auto-increment. CTRL6 (0x25) is set to 0x00 for the ±2g range and default ODR/2 filtering.*
+- *The LIS2DW is configured for 12.5 Hz High-Performance mode with a ±2g range. CTRL1 (0x20) is set to 0x14 to select High-Performance mode and an ODR of 12.5 Hz. CTRL2 (0x21) is set to 0x0C to enable Block Data Update (BDU) and register address auto-increment (IF_INC). CTRL6 (0x25) is set to 0x00 for the ±2g range and default ODR/2 filtering.*
+- *The I2C1 event interrupt must be enabled: the HAL uses it to generate the STOP condition and to raise HAL_I2C_MemRxCpltCallback() when the DMA transfer of the 6 bytes is over.*

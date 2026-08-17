@@ -1,19 +1,37 @@
-# Project 3a: IR communication (TX and RX)
+# LAB10-3a: IR Communication (TX and RX)
 
 ## Description
 The objective of this project is to integrate the keyboard scanner and the LED matrix display with an Infrared (IR) UART communication system. A pressed key is read using a polling timer, transmitted over a 38 kHz modulated IR signal via software bit-banging, received asynchronously via hardware UART and DMA, and finally displayed on the SPI-driven LED matrix.
 
 ## Steps
-1. Create a new project in STM32CubeIDE for your Nucleo board.
+1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
 2. In the IOC file, configure the 8 GPIOs required to scan the keyboard. Set PC8, PC9, PC10, and PC11 as GPIO_Output for the columns. Set PC12, PC13, PC2, and PC3 as GPIO_Input for the rows.
-3. Configure the SPI peripheral (SPI1) to communicate with the LED matrix. Set PA5 for the serial clock, PA7 for the serial data output, and PB6 for the chip select (GPIO_Output). Configure it as Transmit Only Master, 8 Bits, MSB First, with CPOL Low and CPHA 1 Edge. Add a DMA request for SPI1_TX (Memory to Peripheral, Normal Mode).
-4. Configure the USART1 peripheral for IR reception. Set the baud rate strictly to 2400, data bits to 8, no parity, and stop bits to 1. Add a DMA request for USART1_RX (Peripheral to Memory, Normal Mode).
-5. Configure TIM2 to generate the 38 kHz PWM carrier wave for the IR transmitter. Set the Clock Source to Internal, Channel 3 to PWM Generation, Prescaler to 2, and Counter Period to 736 (assuming an 84 MHz clock). Set the Pulse to 368 for a 50% duty cycle.
-6. Configure TIM3 to generate an interrupt every 1/2400 seconds to drive the UART bit-banging transmission. Set the prescaler to 0 and the period to 34999. Enable the TIM3 global interrupt.
-7. Configure TIM4 to generate an interrupt every 4 ms for keyboard polling and LED column multiplexing. Set the prescaler to 8399 and the period to 39. Enable the TIM4 global interrupt.
-8. In the "NVIC Settings" tab, configure the interrupt priorities. Set the TIM3 global interrupt to Priority 0 (highest) and the TIM4 global interrupt to Priority 1 (lower).
-9. Generate the code and open the main.c file.
-10. Define the variables for the keyboard matrix, debouncing, LED font data, SPI buffer, and IR transmission flags:
+3. In the IOC file, configure the pins used to communicate with the LED matrix. Set PA5 for the serial clock (SPI1_SCK), PA7 for the serial data output (SPI1_MOSI) and PB6 for the latch (GPIO_Output).
+4. In the "Connectivity" tab of the IOC file, select SPI1 and enable it in "Transmit Only Master" mode. Then, in the "Parameter Settings" tab, configure it as follows:
+    - Frame Format: Motorola
+    - Data Size: 8 Bits
+    - First Bit: MSB First
+    - Prescaler: 4
+    - Clock Polarity (CPOL): Low
+    - Clock Phase (CPHA): 1 Edge
+5. Still in the SPI1 configuration, enable the "DMA Settings" and configure the DMA for transmission (TX) as follows:
+    - DMA Request: SPI1_TX
+    - Direction: Memory to Peripheral
+    - Mode: Normal
+    - Priority: Low
+6. In the "Connectivity" tab of the IOC file, select USART1 and set the Mode to "Asynchronous". Configure the Baud Rate strictly to 2400 Bits/s, Word Length to 8 Bits, Parity to None, and Stop Bits to 1.
+7. Still in the USART1 configuration, enable the "DMA Settings" and configure the DMA for reception (RX) as follows:
+    - DMA Request: USART1_RX
+    - Direction: Peripheral to Memory
+    - Mode: Normal
+    - Priority: Low
+8. In the "NVIC Settings" tab, enable the USART1 global interrupt and ensure that the DMA stream global interrupts used by SPI1_TX and USART1_RX are enabled.
+9. In the "Timers" tab of the IOC file, select TIM2 and configure it to generate the 38 kHz PWM carrier wave for the IR transmitter. Set the Clock Source to "Internal Clock" and Channel 3 to "PWM Generation CH3". Then, in the "Parameter Settings" tab, set the Prescaler to 2, the Counter Period to 736 and the Pulse to 368 for a 50% duty cycle (assuming an 84 MHz clock).
+10. Configure TIM3 to generate an interrupt every 1/2400 seconds, which is the bit time of the software UART transmission. Set the prescaler to 0 and the period to 34999 (assuming an 84 MHz clock) and enable the TIM3 global interrupt in the NVIC settings with priority 0.
+11. Configure TIM4 to generate an interrupt every 4 ms for the keyboard scanning and the LED column multiplexing. Set the prescaler to 8399 and the period to 39 (assuming an 84 MHz clock) and enable the TIM4 global interrupt in the NVIC settings with priority 1, so that it is lower than the one of TIM3.
+12. Generate the code and open the main.c file.
+13. Define the variables for the keyboard matrix, the debouncing, the LED font data, the SPI buffer and the IR transmission flags:
+
     ```c
     /* Keyboard variables --------------------------------------------------------*/
 
@@ -73,7 +91,8 @@ The objective of this project is to integrate the keyboard scanner and the LED m
 
     uint8_t IR_rx_byte;
     ```
-11. Implement the IR_Transmit_Byte function to initiate a transmission and the IR_transmission_routine to handle the bit-banging:
+14. Define the IR transmission functions to start a transmission and to handle the bit-banging of the single bits:
+
     ```c
     // This function initiates the transmission of a byte via the IR transmitter.
     void IR_Transmit_Byte(uint8_t byte)
@@ -130,7 +149,8 @@ The objective of this project is to integrate the keyboard scanner and the LED m
         IR_tx_bit_index = (IR_tx_bit_index + 1) % 11;
     }
     ```
-12. Implement the keyboard_read_routine to read the keyboard and the led_refresh_routine to refresh the LED matrix display:
+15. Define the keyboard read routine and the LED refresh routine:
+
     ```c
     // This function reads the state of the keyboard and handles debouncing.
     void keyboard_read_routine()
@@ -182,7 +202,8 @@ The objective of this project is to integrate the keyboard scanner and the LED m
         HAL_SPI_Transmit_DMA(&hspi1, tx_buffer, 2);
     }
     ```
-13. In the main function, start the UART receiver DMA and the UI polling timer (TIM4):
+16. In the main function, before the infinite loop, start the UART receiver in DMA mode and the UI polling timer (TIM4) in interrupt mode:
+
     ```c
     // Start listening for incoming IR UART data
     HAL_UART_Receive_DMA(&huart1, &IR_rx_byte, 1);
@@ -190,7 +211,8 @@ The objective of this project is to integrate the keyboard scanner and the LED m
     // Start the UI polling timer (Keypad and LED multiplexing)
     HAL_TIM_Base_Start_IT(&htim4);
     ```
-14. Implement the SPI transmission complete callback to pull the RCLK pin HIGH (latching the shift registers) and increment the active LED column:
+17. At the very end of the main.c file, implement the SPI transmission complete callback to pull the RCLK pin HIGH (latching the shift registers) and increment the active LED column:
+
     ```c
     // This callback is triggered when the SPI transmission is complete.
     void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
@@ -205,7 +227,8 @@ The objective of this project is to integrate the keyboard scanner and the LED m
         }
     }
     ```
-15. Implement the UART receive complete callback to handle incoming data and the UART error callback to restart reception in case of errors:
+18. Just after the SPI callback, implement the UART receive complete callback to decode the received character and the UART error callback to restart the reception in case of errors:
+
     ```c
     // This callback is triggered when the UART reception is complete.
     void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -233,7 +256,8 @@ The objective of this project is to integrate the keyboard scanner and the LED m
         }
     }
     ```
-16. Implement the timer period elapsed callback to handle the IR transmission routine and the UI multiplexing:
+19. Just after the UART callbacks, implement the timer callback to handle the IR transmission routine and the UI multiplexing:
+
     ```c
     // This callback is triggered when a timer period elapses.
     void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -250,6 +274,9 @@ The objective of this project is to integrate the keyboard scanner and the LED m
         }
     }
     ```
-**Note:**:
-- *The IR transmission timer (TIM3) must have a higher preemption priority than the UI timer (TIM4). If the UI timer interrupts the transmission bit-banging, the UART timing will stretch, resulting in corrupted data over the optical link.*
+
+**Note**:
+- *Selecting TIM2 Channel 3 for the PWM generation automatically assigns the carrier output to the PB10 pin, which is the pin connected to the IR transmitter of the expansion board.*
 - *The physical IR receiver hardware automatically filters and strips the 38 kHz carrier wave, allowing the incoming signal to be fed directly into the standard hardware USART1 RX pin via DMA. Transmitter modulation must be handled manually via software and PWM.*
+- *The IR frame is a standard UART frame generated in software: 1 start bit, 8 data bits (LSB first) and 1 stop bit, each lasting exactly one TIM3 period (1/2400 s). The carrier is ON for a logic '0' and OFF for a logic '1', because the IR receiver output is active low.*
+- *The IR transmission timer (TIM3) must have a higher preemption priority than the UI timer (TIM4). If the UI timer interrupts the transmission bit-banging, the UART timing will stretch, resulting in corrupted data over the optical link.*

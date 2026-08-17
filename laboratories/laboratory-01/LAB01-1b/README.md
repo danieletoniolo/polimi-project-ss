@@ -1,16 +1,17 @@
-# Project 1b: Push Button (Interrupts)
+# LAB01-1b: Push Button (Interrupt)
 
 ## Description
-Objective of this project is to switch on an LED every time the blue pushbutton is pressed, and to switch it off when the pushbutton is released. The pushbutton input will be used in interrupt mode.
+The objective of this project is to switch on the "Green LED" on the Nucleo board (LD2) every time the "Blue Push Button" is pressed and to switch it off when the push button is released. The push button input is used in interrupt mode instead of polling.
 
 ## Steps
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
 2. In the IOC file, configure the "Blue Push Button" pin (PC13) as GPIO External Interrupt (with rising and falling edge triggers) and the "Green LED" pin (PA5) as GPIO Output.
-3. Also, in the IOC file, in the "NVIC Settings" tab, enable the EXTI line for the "Blue Push Button" (EXTI line[15:10] interrupts) and set its priority.
+3. In the "System Core" tab, select "NVIC Settings" and enable the EXTI line[15:10] interrupts.
 4. Generate the code and open the main.c file.
-5. Override the GPIO EXTI callback function to read the button state and set the LED accordingly (ON when pressed, OFF when released).
+5. At the very end of the main.c file, implement the EXTI interrupt callback function to read the button state and set the LED accordingly (ON when pressed, OFF when released):
 
     ```c
+    // This function is automatically called when an External Interrupt (EXTI) triggers
     void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
         // Check if we are in the correct GPIO interrupt
@@ -43,4 +44,6 @@ Objective of this project is to switch on an LED every time the blue pushbutton 
     }
     ```
 
-**Note**: *The "Blue Button" is ACTIVE LOW, which means it reads '0' when pressed. The "Green LED" is ACTIVE HIGH, which means it turns on when we write '1'.*
+**Note**:
+- *The "Blue Button" is ACTIVE LOW, which means it reads '0' when pressed. The "Green LED" is ACTIVE HIGH, which means it turns on when we write '1'.*
+- *The priority of the interrupt can be set in the "NVIC Settings" tab of the IOC file. It is left to the default value because there is no other interrupt in this project.*

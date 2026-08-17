@@ -1,17 +1,17 @@
-# Project 1a: IR communication (TX only)
+# LAB10-1a: IR Communication (TX Only)
 
 ## Description
-The objective of this project is to scan a 4x4 matrix keyboard using a polling timer and transmit the pressed character over an Infrared (IR) link.
+The objective of this project is to scan a 4x4 matrix keyboard using a polling timer and to transmit the character of the pressed key over an Infrared (IR) link. The UART frame is generated in software (bit-banging) and modulated on a 38 kHz PWM carrier wave.
 
 ## Steps
-1. Create a new project in STM32CubeIDE for your Nucleo board.
+1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
 2. In the IOC file, configure the 8 GPIOs required to scan the keyboard. Set PC8, PC9, PC10, and PC11 as GPIO_Output for the columns. Set PC12, PC13, PC2, and PC3 as GPIO_Input for the rows.
-3. Configure TIM2 to generate the 38 kHz PWM carrier wave for the IR transmitter. Set the Clock Source to Internal, Channel 3 to PWM Generation, Prescaler to 2, and Counter Period to 736. Set the Pulse to 368 for a 50% duty cycle. (Note: This automatically assigns the PWM output to PB10).
-4. Configure TIM3 to generate an interrupt every 1/2400 seconds to drive the UART bit-banging transmission. Set the prescaler to 0 and the period to 34999. Enable the TIM3 global interrupt.
-5. Configure TIM4 to generate an interrupt every 4 ms for keyboard polling. Set the prescaler to 8399 and the period to 39. Enable the TIM4 global interrupt.
-6. In the "NVIC Settings" tab, configure the interrupt priorities. Set the TIM3 global interrupt to Priority 0 (highest) and the TIM4 global interrupt to Priority 1 (lower).
-7. Generate the code and open the main.c file.
-8. Define the variables for the keyboard matrix, debouncing, and IR transmission flags:
+3. In the "Timers" tab of the IOC file, select TIM2 and configure it to generate the 38 kHz PWM carrier wave for the IR transmitter. Set the Clock Source to "Internal Clock" and Channel 3 to "PWM Generation CH3". Then, in the "Parameter Settings" tab, set the Prescaler to 2, the Counter Period to 736 and the Pulse to 368 for a 50% duty cycle (assuming an 84 MHz clock).
+4. Configure TIM3 to generate an interrupt every 1/2400 seconds, which is the bit time of the software UART transmission. Set the prescaler to 0 and the period to 34999 (assuming an 84 MHz clock) and enable the TIM3 global interrupt in the NVIC settings with priority 0.
+5. Configure TIM4 to generate an interrupt every 4 ms for the keyboard scanning. Set the prescaler to 8399 and the period to 39 (assuming an 84 MHz clock) and enable the TIM4 global interrupt in the NVIC settings with priority 1, so that it is lower than the one of TIM3.
+6. Generate the code and open the main.c file.
+7. Define the variables for the keyboard matrix, the debouncing and the IR transmission flags:
+
     ```c
     /* Keyboard variables --------------------------------------------------------*/
 
@@ -39,7 +39,8 @@ The objective of this project is to scan a 4x4 matrix keyboard using a polling t
     volatile uint8_t IR_tx_byte;
     volatile uint8_t IR_tx_bit_index = 0;
     ```
-9. Implement the IR transmission functions to handle the bit-banging:
+8. Define the IR transmission functions to start a transmission and to handle the bit-banging of the single bits:
+
     ```c
     // This function initiates the transmission of a byte via the IR transmitter.
     void IR_Transmit_Byte(uint8_t byte)
@@ -96,7 +97,8 @@ The objective of this project is to scan a 4x4 matrix keyboard using a polling t
         IR_tx_bit_index = (IR_tx_bit_index + 1) % 11;
     }
     ```
-9. Implement the keyboard read routine:
+9. Define the keyboard read routine, which scans the active column, debounces the keys and starts the IR transmission of the pressed character:
+
     ```c
     // This function reads the state of the keyboard and handles debouncing.
     void keyboard_read_routine()
@@ -114,7 +116,7 @@ The objective of this project is to scan a 4x4 matrix keyboard using a polling t
 
             } else {
 
-            counter[row_index][col_index]++;
+                counter[row_index][col_index]++;
 
                 // Validate input after it has been stable for 4 consecutive polling cycles
                 if (counter[row_index][col_index] > 4) {
@@ -134,12 +136,14 @@ The objective of this project is to scan a 4x4 matrix keyboard using a polling t
         HAL_GPIO_WritePin(GPIOC, column_pins[col_index], GPIO_PIN_SET);
     }
     ```
-10. In the main function, start the UI polling timer (TIM4) before the while loop:
+10. In the main function, before the infinite loop, start the keyboard polling timer (TIM4) in interrupt mode:
+
     ```c
     // Start the polling timer
     HAL_TIM_Base_Start_IT(&htim4);
     ```
-11. Implement the timer period elapsed callback:
+11. At the very end of the main.c file, implement the timer callback to dispatch the two routines according to the timer that raised the interrupt:
+
     ```c
     // This callback is triggered when a timer period elapses.
     void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -155,4 +159,8 @@ The objective of this project is to scan a 4x4 matrix keyboard using a polling t
         }
     }
     ```
-**Note**: *The IR transmission timer (TIM3) must have a higher preemption priority than the keyboard timer (TIM4) to prevent timing jitter during UART bit-banging.*
+
+**Note**:
+- *Selecting TIM2 Channel 3 for the PWM generation automatically assigns the carrier output to the PB10 pin, which is the pin connected to the IR transmitter of the expansion board.*
+- *The IR frame is a standard UART frame generated in software: 1 start bit, 8 data bits (LSB first) and 1 stop bit, each lasting exactly one TIM3 period (1/2400 s). The carrier is ON for a logic '0' and OFF for a logic '1', because the IR receiver output is active low.*
+- *The IR transmission timer (TIM3) must have a higher preemption priority than the keyboard timer (TIM4). Otherwise the keyboard scan could delay a bit transition, stretching the UART timing and corrupting the data sent over the optical link.*

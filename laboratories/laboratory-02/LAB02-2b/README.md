@@ -1,7 +1,7 @@
-# Project 2b: Playing a Song (PWM)
+# LAB02-2b: Song Playback (PWM)
 
 ## Description
-Objective of this project is to play the song "London Bridge is Falling Down" using the speaker via PWM signal generation. The following notes are provided and are the following (fixed Prescaler at 99):
+The objective of this project is to play the song "London Bridge is Falling Down" on the speaker via PWM signal generation. The notes to use are the following (with a fixed Prescaler of 99):
 
 | Note | Frequency (Hz) | Period (ms) | Pulse (ms) |
 |------|----------------|-------------|------------|
@@ -21,7 +21,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
 ## Steps
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
 2. In the IOC file, configure the speaker pin (PA9) as an alternate function for TIM1 channel 2 (TIM1_CH2) to generate the PWM signal.
-3. Also, in the IOC file, in the "TIM1" tab, select "PWM Generation CH2" for Channel 2 and then in the "Parameter settings" tab, set the Prescaler to 99, the Counter Period and the pulse can be set to 0 since they will be updated at runtime based on the desired frequency.
+3. In the "Timers" tab of the IOC file, select TIM1 and set "PWM Generation CH2" for Channel 2. Then, in the "Parameter Settings" tab, set the Prescaler to 99. The Counter Period and the Pulse can be left to 0, since they are updated at runtime based on the desired frequency.
 4. Generate the code and open the main.c file.
 5. Define a struct to hold the note frequency and duration:
 
@@ -31,7 +31,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
       uint16_t duration;  // Note duration in milliseconds
     } Note;
     ```
-6. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note and calculate the length of the song:
+6. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note, and calculate the length of the song:
 
     ```c
     Note londonBridge[] = {
@@ -76,10 +76,10 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
         {262, 1200}, // C4 (Dotted Half)
     };
 
+    // Calculate how many notes are in the array
     int songLength = sizeof(londonBridge) / sizeof(londonBridge[0]);
     ```
-
-7. Define a function to play a note using PWM by setting the TIM1 channel 2 Pulse and Counter Period based on the note frequency and duration.
+7. Define a function to play a note using PWM, by setting the TIM1 channel 2 Counter Period and Pulse based on the note frequency:
 
     ```c
     void playNote(uint16_t freq) {
@@ -102,7 +102,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
         }
     }
     ```
-8. In the main function, start the PWM signal generation and loop through the `londonBridge` array to play each note for its specified duration.
+8. In the main function, before the infinite loop, start the PWM signal generation and loop through the `londonBridge` array to play each note for its specified duration:
 
     ```c
     // Start the timer on the speaker channel
@@ -111,7 +111,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
     // Step through the array to play the song
     for(int i = 0; i < songLength; i++) {
 
-	    // Set the frequency
+        // Set the frequency
         playNote(londonBridge[i].frequency);
 
         // Wait for the duration of the note
@@ -122,7 +122,6 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
     HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_2);
     ```
 
-
-
-
-**Note**: *Ensure that the timer clock is enabled and its frequency is set correctly (84 MHz) in the "Clock Configuration" tab of the IOC file to achieve the desired PWM frequency. The TIM1 clock is derived from the APB2 clock.*
+**Note**:
+- *Ensure that the timer clock is enabled and its frequency is set correctly (84 MHz) in the "Clock Configuration" tab of the IOC file to achieve the desired PWM frequency. The TIM1 clock is derived from the APB2 clock.*
+- *With a Prescaler of 99 the timer counts at 840000 Hz, so the Counter Period (ARR) of each note is computed at runtime as 840000 / frequency - 1.*

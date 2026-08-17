@@ -1,16 +1,21 @@
-# Project 2a: Non-Blocking Song Playback (PWM)
+# HW03-2a: Microphone Triggered Non-Blocking Song Playback (PWM)
 
 ## Description
-The objective of this project is to recreate the ["Song Playback"](../../../laboratories/laboratory-02/LAB02-2c/) project without using the blocking HAL_Delay() function. Instead, this implementation uses a hardware timer interrupt to create a fully non-blocking state machine.
+The objective of this project is to recreate the ["Microphone Triggered Song Playback"](../../../laboratories/laboratory-02/LAB02-2c/) project without using the blocking HAL_Delay() function. Instead, this implementation uses a hardware timer interrupt (TIM2) to advance the song, turning the playback into a fully non-blocking state machine.
 
 ## Steps
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
-2. In the IOC file, configure the speaker pin (PA9) as an alternate function for TIM1 channel 2 (TIM1_CH2) to generate the PWM signal and the microphone pin (PA8) as an external interrupt (GPIO_EXTI8) to trigger the start of the song. The microphone pin should be configured as an external interrupt with a rising edge trigger and also a pull-down resistor to avoid false triggering.
+2. In the IOC file, configure the speaker pin (PA9) as an alternate function for TIM1 channel 2 (TIM1_CH2) to generate the PWM signal and the microphone pin (PA8) as an external interrupt (GPIO_EXTI8) to trigger the start of the song. The microphone pin should be configured with a rising edge trigger and a pull-down resistor to avoid false triggering.
 3. In the "System Core" tab, select "NVIC Settings" and enable the EXTI line[9:5] interrupts.
-4. Also, in the IOC file, in the "TIM1" tab, select "PWM Generation CH2" for Channel 2 and then in the "Parameter settings" tab, set the Prescaler to 99, the Counter Period and the pulse can be set to 0 since they will be updated at runtime based on the desired frequency.
-5. To handle the song playback, configure the TIM2 clock source to be the internal clock (APB1) and set the Prescaler to 8399 and the Counter Period to 1999. This will create a timer that ticks every 200 ms, which will be used to manage the timing of the song playback without blocking the main loop.
+4. In the "Timers" tab of the IOC file, select TIM1 and set "PWM Generation CH2" for Channel 2. Then, in the "Parameter Settings" tab, set the Prescaler to 99. The Counter Period and the Pulse can be left to 0, since they are updated at runtime based on the desired frequency.
+5. To advance the song playback, configure TIM2 with the internal clock as clock source. Set the prescaler to 8399 and the counter period to 1999 to generate an interrupt every 200 ms (assuming an 84 MHz clock) and enable the TIM2 global interrupt in the NVIC settings.
 6. Generate the code and open the main.c file.
-7. Define a struct to hold the note frequency and duration:
+7. Define the duration of a single tick of the playback state machine, which must match the period of TIM2:
+
+    ```c
+    #define TIMER_TICK_MS 200
+    ```
+8. Define a struct to hold the note frequency and duration:
 
     ```c
     typedef struct {
@@ -18,7 +23,7 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
       uint16_t duration;  // Note duration in milliseconds
     } Note;
     ```
-8. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note and calculate the length of the song:
+9. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note, and calculate the length of the song:
 
     ```c
     Note londonBridge[] = {
@@ -66,8 +71,7 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
     // Calculate how many notes are in the array
     int songLength = sizeof(londonBridge) / sizeof(londonBridge[0]);
     ```
-
-9. Create volatile flags to handle the state of the song playback and the microphone interrupt.
+10. Create the volatile flags and counters that hold the state of the playback and of the microphone interrupt:
 
     ```c
     volatile uint8_t playSongFlag = 0;
@@ -76,8 +80,7 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
     volatile int currentNoteIndex = 0;
     volatile int ticksRemaining = 0;
     ```
-
-10. Define a function to play a note using PWM by setting the TIM1 channel 2 Pulse and Counter Period based on the note frequency and duration.
+11. Define a function to play a note using PWM, by setting the TIM1 channel 2 Counter Period and Pulse based on the note frequency:
 
     ```c
     void playNote(uint16_t freq) {
@@ -100,7 +103,7 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
         }
     }
     ```
-11. In the main function, inside the infinite loop, check if the `playSongFlag` is set. If it is, play the song by iterating through the `londonBridge` array and calling the `playNote` function for each note. After playing the song, reset the `playSongFlag`.
+12. In the main function, inside the infinite loop, check if the `playSongFlag` is set. If it is, initialize the state machine on the first note and start both the PWM and the playback timer. The loop only starts the song: it never waits for it to finish:
 
     ```c
     while (1)
@@ -111,7 +114,7 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
             isPlaying = 1;
             playSongFlag = 0;
 
-            // Initialiaze the note index and ticks duration
+            // Initialize the note index and ticks duration
             currentNoteIndex = 0;
             ticksRemaining = londonBridge[0].duration / TIMER_TICK_MS;
 
@@ -122,7 +125,7 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
         }
     }
     ```
-12. At the very end of the main.c file, implement the EXTI interrupt callback function to set the `playSongFlag` when the microphone detects a loud noise.
+13. At the very end of the main.c file, implement the EXTI interrupt callback function to set the `playSongFlag` when the microphone detects a loud noise:
 
     ```c
     // This function is automatically called when an External Interrupt (EXTI) triggers
@@ -139,11 +142,10 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
         }
     }
     ```
-
-13. Just after the EXTI callback function, implement the TIM2 interrupt callback function to handle the timing of the song playback. This function will decrement the `ticksRemaining` counter and move to the next note when the current note's duration has elapsed.
+14. Just after the EXTI callback function, implement the TIM2 interrupt callback function to handle the timing of the song playback. This function decrements the `ticksRemaining` counter and moves to the next note when the duration of the current note has elapsed:
 
     ```c
-    // This function is automatically called when a Timer Period elapse
+    // This function is automatically called when a Timer Period elapses
     void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
         if (htim->Instance == TIM2) {
@@ -179,5 +181,6 @@ The objective of this project is to recreate the ["Song Playback"](../../../labo
 
 **Note**:
 - *Ensure that the timer clock is enabled and its frequency is set correctly (84 MHz) in the "Clock Configuration" tab of the IOC file to achieve the desired PWM frequency. The TIM1 clock is derived from the APB2 clock.*
-- *The microphone pin (PA8) is configured as an external interrupt to trigger the start of the song. The priority of the interrupt can be set in the "NVIC Settings" tab of the IOC file. It is skipped because there is no other interrupt in this project.*
-- *The TIM2 timer is configured to generate an interrupt every 200 ms because the shortest note duration in the song is 200 ms. This allows for a non-blocking implementation of the song playback, as the main loop can continue to run while the song is being played.*
+- *The priority of the EXTI interrupt can be set in the "NVIC Settings" tab of the IOC file. It is left to the default value because the two interrupts of this project never need to preempt each other.*
+- *The TIM2 timer is configured to generate an interrupt every 200 ms because the shortest note duration in the song is 200 ms, and every other duration is a multiple of it. This allows a non-blocking implementation of the song playback, as the main loop can keep running while the song is played.*
+- *The `isPlaying` flag, and not `playSongFlag`, is the one checked inside the EXTI callback: `playSongFlag` is cleared as soon as the song starts, so it could not prevent the song from being restarted by its own sound.*

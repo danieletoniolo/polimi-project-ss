@@ -1,16 +1,14 @@
-# Project 1a: Microphone (Interrupt)
+# HW02-1a: Microphone (Interrupt)
 
 ## Description
-
-Objective of this project is to modify the status (switch on/off) the "Green LED" on the Nucleo board every time you snap your fingers.
-
+The objective of this project is to change the status (switch on/off) of the "Green LED" on the Nucleo board (LD2) every time you snap your fingers. The microphone of the expansion board is read in interrupt mode and a software debounce avoids multiple triggers on a single snap.
 
 ## Steps
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
-2. In the IOC file, configure the microphone pin (PA8) as an external interrupt (GPIO_EXTI8) with a rising edge trigger and also a pull-down resistor to avoid false triggering and the "Green LED" pin (PA5) as GPIO Output.
+2. In the IOC file, configure the microphone pin (PA8) as an external interrupt (GPIO_EXTI8) with a rising edge trigger and a pull-down resistor to avoid false triggering, and the "Green LED" pin (PA5) as GPIO Output.
 3. In the "System Core" tab, select "NVIC Settings" and enable the EXTI line[9:5] interrupts.
 4. Generate the code and open the main.c file.
-5. At the very end of the main.c file, implement the EXTI interrupt callback function to toggle the "Green LED" every time the microphone detects a sound. A 200ms software debounce is implemented to prevent multiple triggers from a single snap.
+5. At the very end of the main.c file, implement the EXTI interrupt callback function to toggle the "Green LED" every time the microphone detects a sound. A 200 ms software debounce is implemented to prevent multiple triggers from a single snap:
 
     ```c
     // This function is automatically called when an External Interrupt (EXTI) triggers
@@ -30,13 +28,15 @@ Objective of this project is to modify the status (switch on/off) the "Green LED
 
                 // Toggle the Green LED on PA5
                 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        
+
                 // Update the time of the last valid snap
                 last_snap_time = current_time;
             }
         }
     }
     ```
+
 **Note**:
-- *The microphone pin (PA8) is configured as an external interrupt to trigger the start of the song. The priority of the interrupt can be set in the "NVIC Settings" tab of the IOC file. It is skipped because there is no other interrupt in this project.*
-- *The static keyword on last_snap_time ensures that the variable is initialized only once and retains its value between function calls, allowing us to track the time of the last valid snap across multiple interrupts.* 
+- *The priority of the EXTI interrupt can be set in the "NVIC Settings" tab of the IOC file. It is left to the default value because there is no other interrupt in this project.*
+- *The static keyword on last_snap_time ensures that the variable is initialized only once and retains its value between function calls, allowing us to track the time of the last valid snap across multiple interrupts.*
+- *A single snap produces a burst of pulses on the microphone output, so without the debounce the callback would fire several times and the LED would end up in a random state.*

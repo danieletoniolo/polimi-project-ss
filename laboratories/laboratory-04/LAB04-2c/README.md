@@ -1,17 +1,19 @@
-# Project 2c: ADC triggered by TIM to LCD
+# LAB04-2c: ADC Single Acquisition (TIM Triggered) to LCD
 
 ## Description
-Objective of this project is to acquire the voltage of the potentiometer connected to the ADC pin of the Nucleo board every second using a timer (TIM) and display the value on the LCD. In the LCD we will display the voltage value in volts with 3 decimal places and a bar graph representation of the voltage value.
+The objective of this project is to acquire the voltage of the potentiometer connected to the ADC pin of the Nucleo board every second and display the value on the LCD. The LCD shows the voltage value in volts with 3 decimal places and a bar graph representation of the same value.
 
 ## Steps
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
 2. In the IOC file, configure the following pins as GPIO Output for the LCD: PA4 (LCD_BL_ON), PB1 (LCD_E), PB2 (LCD_RS), PB12 (LCD_D4), PB13 (LCD_D5), PB14 (LCD_D6), and PB15 (LCD_D7).
-3. Also in the IOC file, configure the pin connected to the potentiometer (PA1) as an ADC input (ADC1_IN1).
-4. In the "Analog" tab select ADC1 and enable the channel corresponding to the pin connected to the potentiometer (ADC1_IN1). Set the sampling time to 480 cycles and the resolution to 12 bits. Also in the "NVIC Settings" of the ADC1 configuration, enable the global interrupt. The ADC will be triggered by TIM2, so in the "Trigger" tab select "External Trigger Conversion Source" as "Timer 2 Trigger Out event".
-5. To make the ADC conversion start every second, configure TIM2 to generate an update event every second. In the "Timers" tab select TIM2 and set the prescaler to 8399 and the counter period to 9999 to reach a frequency of 1 Hz. In the"Trigger Out Parameters" select "Update Event" as the trigger output event.
-6. Generate the code and open the main.c file.
-7. Put in the src and inc files the LCD library provided in the course materials (PMDB16_LCD.c and PMDB16_LCD.h).
-8. Define the variables to handle the the ADC reading and LCD display:
+3. In the IOC file, configure the pin connected to the potentiometer (PA1) as an ADC input (ADC1_IN1).
+4. In the "Analog" tab of the IOC file, select ADC1 and enable the channel connected to the potentiometer (IN1). Then, in the "Parameter Settings" tab, set the Resolution to 12 bits, the Sampling Time to 480 Cycles and the "External Trigger Conversion Source" to "Timer 2 Trigger Out event".
+5. In the "NVIC Settings" tab of the ADC1 configuration, enable the ADC1 global interrupt.
+6. To make the ADC conversion start every second, configure TIM2 to generate an update event every second. In the "Timers" tab select TIM2, set the prescaler to 8399 and the counter period to 9999 to reach a frequency of 1 Hz (assuming an 84 MHz clock), and in the "Trigger Output (TRGO) Parameters" section select "Update Event" as the trigger event.
+7. Generate the code and open the main.c file.
+8. Copy the LCD library provided in the course materials into the project: PMDB16_LCD.c in Core/Src and PMDB16_LCD.h in Core/Inc.
+9. Define the variables to handle the ADC reading and the LCD display:
+
     ```c
     // ADC raw value and voltage conversion
     uint32_t raw_value = 0;
@@ -21,7 +23,8 @@ Objective of this project is to acquire the voltage of the potentiometer connect
     char top_row[17];
     int bar_status;
     ```
-9. In the main function, initialize the LCD and start the ADC and TIM2:
+10. In the main function, before the infinite loop, initialize the LCD and start the timer and the ADC in interrupt mode:
+
     ```c
     // Initialize the LCD
     lcd_initialize();
@@ -32,7 +35,8 @@ Objective of this project is to acquire the voltage of the potentiometer connect
     // Start the ADC in interrupt mode
     HAL_ADC_Start_IT(&hadc1);
     ```
-10. Implement the ADC conversion complete callback function to read the ADC value, convert it to voltage, and update the LCD display:
+11. At the very end of the main.c file, implement the ADC conversion complete callback function to read the ADC value, convert it to voltage, and update the LCD display:
+
     ```c
     // This callback is automatically called when the ADC finishes a conversion
     void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
@@ -56,6 +60,8 @@ Objective of this project is to acquire the voltage of the potentiometer connect
         }
     }
     ```
+
 **Note**:
-- *The baud rate could be set to any value supported by the hardware as long as it is within the supported range and the receiver is configured accordingly.*
 - *To format the string with floating-point values, we have to enable the Float formatting option in the project settings under C/C++ Build > Settings > MCU Settings. It is disabled by default to save resources.*
+- *The timer is started with HAL_TIM_Base_Start() and not with HAL_TIM_Base_Start_IT(): the update event is routed to the ADC through the TRGO line by the hardware, so no timer interrupt is needed on the CPU side.*
+- *The bar graph of the LCD is 80 pixels wide, so the raw 12-bit value (0-4095) is rescaled to the 0-80 range before being passed to lcd_drawBar().*

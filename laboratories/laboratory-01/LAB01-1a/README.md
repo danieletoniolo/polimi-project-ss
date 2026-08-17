@@ -1,17 +1,17 @@
-# Project 1a: Push Button (Polling)
+# LAB01-1a: Push Button (Polling)
 
 ## Description
-Objective of this project is to switch on the green LED on Nucleo board (LD2), every time the blue push button is pressed and to switch off when the push button is released. A polling operation will be used to monitor the state of the push button.
+The objective of this project is to switch on the "Green LED" on the Nucleo board (LD2) every time the "Blue Push Button" is pressed and to switch it off when the push button is released. A polling operation is used to monitor the state of the push button.
 
 ## Steps
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
 2. In the IOC file, configure the "Blue Push Button" pin (PC13) as GPIO Input and the "Green LED" pin (PA5) as GPIO Output.
 3. Generate the code and open the main.c file.
-4. In the main loop, implement a polling mechanism to check the state of the push button:
+4. In the main function, inside the infinite loop, implement a polling mechanism to check the state of the push button and set the LED accordingly (ON when pressed, OFF when released):
 
     ```c
-    while (1) {
-
+    while (1)
+    {
         // The "Blue Button" is ACTIVE LOW,
         // so we read '0' when it is pressed.
 
@@ -36,4 +36,5 @@ Objective of this project is to switch on the green LED on Nucleo board (LD2), e
     }
     ```
 
-**Note**: *The "Blue Button" is ACTIVE LOW, which means it reads '0' when pressed. The "Green LED" is ACTIVE HIGH, which means it turns on when we write '1'.*
+**Note**:
+- *The "Blue Button" is ACTIVE LOW, which means it reads '0' when pressed. The "Green LED" is ACTIVE HIGH, which means it turns on when we write '1'.*

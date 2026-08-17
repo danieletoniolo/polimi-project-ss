@@ -1,8 +1,7 @@
-# Project 2c: Playing a Song (PWM) with Interrupts
+# LAB02-2c: Microphone Triggered Song Playback (PWM)
 
 ## Description
-
-Objective of this project is to play the song "London Bridge is Falling Down" using the speaker via PWM signal generation. The start of the song is triggered by the sound detection of the microphone using an external interrupt (EXTI). The following notes are provided and are the following (fixed Prescaler at 99):
+The objective of this project is to play the song "London Bridge is Falling Down" on the speaker via PWM signal generation. The start of the song is triggered by the sound detected by the microphone, using an external interrupt (EXTI). The notes to use are the following (with a fixed Prescaler of 99):
 
 | Note | Frequency (Hz) | Period (ms) | Pulse (ms) |
 |------|----------------|-------------|------------|
@@ -21,9 +20,9 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
 
 ## Steps
 1. Create a new project in STM32CubeIDE for the F401RE Nucleo board.
-2. In the IOC file, configure the speaker pin (PA9) as an alternate function for TIM1 channel 2 (TIM1_CH2) to generate the PWM signal and the microphone pin (PA8) as an external interrupt (GPIO_EXTI8) to trigger the start of the song. The microphone pin should be configured as an external interrupt with a rising edge trigger and also a pull-down resistor to avoid false triggering.
+2. In the IOC file, configure the speaker pin (PA9) as an alternate function for TIM1 channel 2 (TIM1_CH2) to generate the PWM signal and the microphone pin (PA8) as an external interrupt (GPIO_EXTI8) to trigger the start of the song. The microphone pin should be configured with a rising edge trigger and a pull-down resistor to avoid false triggering.
 3. In the "System Core" tab, select "NVIC Settings" and enable the EXTI line[9:5] interrupts.
-4. Also, in the IOC file, in the "TIM1" tab, select "PWM Generation CH2" for Channel 2 and then in the "Parameter settings" tab, set the Prescaler to 99, the Counter Period and the pulse can be set to 0 since they will be updated at runtime based on the desired frequency.
+4. In the "Timers" tab of the IOC file, select TIM1 and set "PWM Generation CH2" for Channel 2. Then, in the "Parameter Settings" tab, set the Prescaler to 99. The Counter Period and the Pulse can be left to 0, since they are updated at runtime based on the desired frequency.
 5. Generate the code and open the main.c file.
 6. Define a struct to hold the note frequency and duration:
 
@@ -33,7 +32,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
       uint16_t duration;  // Note duration in milliseconds
     } Note;
     ```
-7. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note and calculate the length of the song:
+7. Create an array of `Note` structs to represent the song "London Bridge is Falling Down" with the corresponding frequencies and durations for each note, and calculate the length of the song:
 
     ```c
     Note londonBridge[] = {
@@ -81,13 +80,12 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
     // Calculate how many notes are in the array
     int songLength = sizeof(londonBridge) / sizeof(londonBridge[0]);
     ```
-8. Create a volatile flag variable to indicate when the microphone interrupt has been triggered.
+8. Create a volatile flag variable to indicate when the microphone interrupt has been triggered:
 
     ```c
     volatile uint8_t playSongFlag = 0;
     ```
-
-9. Define a function to play a note using PWM by setting the TIM1 channel 2 Pulse and Counter Period based on the note frequency and duration.
+9. Define a function to play a note using PWM, by setting the TIM1 channel 2 Counter Period and Pulse based on the note frequency:
 
     ```c
     void playNote(uint16_t freq) {
@@ -110,7 +108,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
         }
     }
     ```
-10. In the main function, inside the infinite loop, check if the `playSongFlag` is set. If it is, play the song by iterating through the `londonBridge` array and calling the `playNote` function for each note. After playing the song, reset the `playSongFlag`.
+10. In the main function, inside the infinite loop, check if the `playSongFlag` is set. If it is, play the song by iterating through the `londonBridge` array and calling the `playNote` function for each note. After playing the song, reset the `playSongFlag`:
 
     ```c
     while (1)
@@ -137,7 +135,7 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
         }
     }
     ```
-11. At the very end of the main.c file, implement the EXTI interrupt callback function to set the `playSongFlag` when the microphone detects a loud noise.
+11. At the very end of the main.c file, implement the EXTI interrupt callback function to set the `playSongFlag` when the microphone detects a loud noise:
 
     ```c
     // This function is automatically called when an External Interrupt (EXTI) triggers
@@ -154,7 +152,9 @@ Objective of this project is to play the song "London Bridge is Falling Down" us
         }
     }
     ```
+
 **Note**:
 - *Ensure that the timer clock is enabled and its frequency is set correctly (84 MHz) in the "Clock Configuration" tab of the IOC file to achieve the desired PWM frequency. The TIM1 clock is derived from the APB2 clock.*
-- *The microphone pin (PA8) is configured as an external interrupt to trigger the start of the song. The priority of the interrupt can be set in the "NVIC Settings" tab of the IOC file. It is skipped because there is no other interrupt in this project.*
+- *With a Prescaler of 99 the timer counts at 840000 Hz, so the Counter Period (ARR) of each note is computed at runtime as 840000 / frequency - 1.*
+- *The priority of the EXTI interrupt can be set in the "NVIC Settings" tab of the IOC file. It is left to the default value because there is no other interrupt in this project.*
 - *Do not put the song loop directly inside the callback function. Doing so will block the SysTick timer, causing the microcontroller to freeze. Always use a flag to defer long executions to the main loop.*
