@@ -348,7 +348,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// This function is automatically called when a Timer Period elapse
+// This function is automatically called when a Timer Period elapses
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM2) {
@@ -358,7 +358,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 }
 
-// This function is automatically called when DMA finish the I2C read
+// This function is automatically called when the DMA finishes the I2C read
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
   if (hi2c->Instance == I2C1) {

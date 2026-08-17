@@ -284,16 +284,16 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// This function is automatically called when a Timer Period elapse
+// This function is automatically called when a Timer Period elapses
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM2) {
     
-    // Format the string with name, birth year and a newline character
+    // Format the message with a newline character
     length = snprintf(tx_buffer, sizeof(tx_buffer), "Hello World!\n");
 
-    // Send the string via UART2
-    HAL_UART_Transmit(&huart2, (uint8_t*)tx_buffer,length, 100);
+    // Send the message via UART2
+    HAL_UART_Transmit(&huart2, (uint8_t*)tx_buffer, length, 100);
   }
 }
 

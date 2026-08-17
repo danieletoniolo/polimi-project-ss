@@ -93,6 +93,7 @@ Note londonBridge[] = {
   {262, 1200}, // C4 (Dotted Half)
 };
 
+// Calculate how many notes are in the array
 int songLength = sizeof(londonBridge) / sizeof(londonBridge[0]);
 
 volatile uint8_t playSongFlag = 0;

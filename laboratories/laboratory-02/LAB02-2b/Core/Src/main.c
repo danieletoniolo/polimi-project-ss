@@ -93,6 +93,7 @@ Note londonBridge[] = {
   {262, 1200}, // C4 (Dotted Half)
 };
 
+// Calculate how many notes are in the array
 int songLength = sizeof(londonBridge) / sizeof(londonBridge[0]);
 
 /* USER CODE END PV */
@@ -117,15 +118,15 @@ void playNote(uint16_t freq) {
 
   } else {
 
-	// Calculate Period (ARR) based on the 840000 Hz timer frequency
-	uint32_t arr = (840000 / freq) - 1;
+    // Calculate Period (ARR) based on the 840000 Hz timer frequency
+    uint32_t arr = (840000 / freq) - 1;
 
-	// Calculate Pulse (CCRx) for exactly 50% duty cycle
-	uint32_t pulse = (arr + 1) / 2 - 1;
+    // Calculate Pulse (CCRx) for exactly 50% duty cycle
+    uint32_t pulse = (arr + 1) / 2 - 1;
 
-	// Write values to the timer registers dynamically
-	__HAL_TIM_SET_AUTORELOAD(&htim1, arr);
-	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, pulse);
+    // Write values to the timer registers dynamically
+    __HAL_TIM_SET_AUTORELOAD(&htim1, arr);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, pulse);
   }
 }
 
@@ -170,7 +171,7 @@ int main(void)
   // Step through the array to play the song
   for(int i = 0; i < songLength; i++) {
 
-	// Set the frequency
+    // Set the frequency
     playNote(londonBridge[i].frequency);
 
     // Wait for the duration of the note

@@ -298,7 +298,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// This function is automatically called when a Timer Period elapse
+// This function is automatically called when a Timer Period elapses
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM2) {

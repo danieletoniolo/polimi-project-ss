@@ -158,7 +158,7 @@ int main(void)
     // Select active sensor
     active_sensor = SENSOR_LIS2DW;
 
-    // Initialize LIS2DW (12.5 Hz, HP mode, BDU on, IF_INC on, +/- 2g)
+    // Initialize LIS2DW (12.5 Hz, High-Performance mode, BDU on, IF_INC on, +/- 2g)
     cfg_reg = 0x14; // CTRL1
     HAL_I2C_Mem_Write(&hi2c1, LIS2DW_ADDR, LIS2DW_CTRL1, I2C_MEMADD_SIZE_8BIT, &cfg_reg, 1, 100);
     cfg_reg = 0x0C; // CTRL2
@@ -406,7 +406,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// This function is automatically called when a Timer Period elapse
+// This function is automatically called when a Timer Period elapses
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM2) {

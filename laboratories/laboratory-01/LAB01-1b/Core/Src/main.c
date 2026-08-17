@@ -57,6 +57,7 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// This function is automatically called when an External Interrupt (EXTI) triggers
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 	// Check if we are in the correct GPIO interrupt

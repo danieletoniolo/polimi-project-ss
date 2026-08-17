@@ -53,7 +53,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
-// Array to hold 2000 samples (2 second of data at 1ms intervals)
+// Array to hold 2000 samples (2 seconds of data at 1ms intervals)
 uint32_t adc_buffer[2000];
 
 // Variables for calculations
@@ -404,7 +404,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// This callback is automatically called when ADC finishes a conversion of the first 1000 sample
+// This callback is automatically called when ADC finishes a conversion of the first 1000 samples
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
   if (hadc->Instance == ADC1) {
@@ -412,7 +412,7 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
   }
 }
 
-// This callback is automatically called when ADC finishes a conversion of the second 1000 sample
+// This callback is automatically called when ADC finishes a conversion of the second 1000 samples
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
   if (hadc->Instance == ADC1) {

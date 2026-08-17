@@ -97,6 +97,7 @@ Note londonBridge[] = {
   {262, 1200}, // C4 (Dotted Half)
 };
 
+// Calculate how many notes are in the array
 int songLength = sizeof(londonBridge) / sizeof(londonBridge[0]);
 
 volatile uint8_t playSongFlag = 0;
@@ -188,7 +189,7 @@ int main(void)
 	    isPlaying = 1;
 	    playSongFlag = 0;
 
-	    // Initialiaze the note index and ticks duration
+	    // Initialize the note index and ticks duration
 	    currentNoteIndex = 0;
 	    ticksRemaining = londonBridge[0].duration / TIMER_TICK_MS;
 
@@ -459,7 +460,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
-// This function is automatically called when a Timer Period elapse
+// This function is automatically called when a Timer Period elapses
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM2) {

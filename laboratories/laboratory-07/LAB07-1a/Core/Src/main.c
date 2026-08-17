@@ -126,7 +126,7 @@ int main(void)
   // Set the initial pointer target before starting the timer
   active_letter = letter_D;
 
-  // Start the muplexing timer in interrupt mode (4ms)
+  // Start the multiplexing timer in interrupt mode (4ms)
   HAL_TIM_Base_Start_IT(&htim2);
 
   // Start the letter-swapping timer in interrupt mode (1000 ms)

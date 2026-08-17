@@ -48,7 +48,7 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-// UART transmission buffer and index
+// UART reception buffer and index
 char rx_buffer[RX_BUFFER_SIZE + 1];
 volatile uint8_t rx_index = 0;
 
@@ -103,7 +103,7 @@ int main(void)
   lcd_initialize();
 
   // Start UART in interrupt mode
-  HAL_UARTEx_ReceiveToIdle_IT(&huart2, (uint8_t*)rx_buffer, 16);
+  HAL_UARTEx_ReceiveToIdle_IT(&huart2, (uint8_t*)rx_buffer, RX_BUFFER_SIZE);
 
   /* USER CODE END 2 */
 
@@ -256,7 +256,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
   if (huart->Instance == USART2) {
 
-    // Update global tracking index with the new chuck of data
+    // Update global tracking index with the new chunk of data
     rx_index += Size;
 
     // Check if we hit Enter or if the buffer is completely full
